@@ -38,3 +38,19 @@ CREATE TABLE IF NOT EXISTS "tokens" (
 
 CREATE INDEX IF NOT EXISTS "index_expired" ON "tokens" ("expired");
 CREATE INDEX IF NOT EXISTS "index_user_id1" ON "tokens" ("user_id");
+
+CREATE TABLE IF NOT EXISTS "tasks" (
+  "id"       TEXT NOT NULL PRIMARY KEY,
+  "user_id"  TEXT NOT NULL,
+  "command"  TEXT,
+  "result"   TEXT,
+  "status"   TEXT NOT NULL,
+  "created"  DATETIME NOT NULL,
+  "started"  DATETIME NOT NULL,
+  "finished" DATETIME NOT NULL,
+  CONSTRAINT "lnk_tasks_users" FOREIGN KEY ("user_id") REFERENCES "users" ("id"),
+  CONSTRAINT "unique_id" UNIQUE ("id")
+);
+
+CREATE INDEX IF NOT EXISTS "index_status" ON "tasks" ("status");
+CREATE INDEX IF NOT EXISTS "index_user_id2" ON "tasks" ("user_id");
