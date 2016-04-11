@@ -11,6 +11,7 @@ from tornado.web import Application as BaseApplication, authenticated, url
 
 from handlers.base import BaseHandler
 from handlers.tokens import TokenHandler
+from handlers.vms import GuestsHandler
 from settings import BASE_DIR
 
 define('port', default=9443)
@@ -51,7 +52,8 @@ def main():
     app = Application(
         [
             url(r'/', DemoHandler),
-            url(r'/token/', TokenHandler)
+            url(r'/token/', TokenHandler),
+            url(r'/guests/', GuestsHandler),
         ],
         template_path=os.path.join(BASE_DIR, 'templates'),
         static_path=os.path.join(BASE_DIR, 'static'),

@@ -1,12 +1,23 @@
+from datetime import datetime
+
 from tornado.escape import json_decode
 from tornado.web import RequestHandler
 
 
 class BaseHandler(RequestHandler):
-    COOKIE_NAME = 'VMs_manager'
-
     def get_current_user(self):
-        user_json = self.get_secure_cookie(self.COOKIE_NAME)
-        if not user_json:
+        token = self.request.headers.get('authorization')
+        if not token:
             return None
-        return json_decode(user_json)
+        else:
+            token = token.split()[1]
+            now = datetime.utcnow()
+            c = self.application.db.cursor()
+            c.execute(
+                'SELECT * FROM users WHERE id = ('
+                    'SELECT user_id FROM tokens WHERE id = ? AND expired < ?'
+                ')',
+                (token, now))
+            user = c.fetchone()
+            return dict(zip(user.keys(), user))
+
