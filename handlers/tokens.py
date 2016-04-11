@@ -79,12 +79,11 @@ class TokenHandler(RequestHandler):
 
         c = self.application.db.cursor()
         c.execute(
-            'SELECT * FROM accounts '
-            'WHERE provider = ? AND sub = ? AND email = ?',
-            (args['provider'], userinfo['sub'], userinfo['email'])
-        )
-        account = c.fetchone()
-        if not account:
+            'SELECT * FROM users WHERE email = ?', (userinfo['email'], ))
+        user = c.fetchone()
+        if user:
+            user = dict(zip(user.keys(), user))
+        else:
             new_user_id = str(uuid.uuid4())
             user = {
                 'id': new_user_id,
@@ -92,8 +91,16 @@ class TokenHandler(RequestHandler):
             }
             c.execute('INSERT INTO users (id, email) VALUES (:id, :email)',
                       user)
+
+        c.execute(
+            'SELECT * FROM accounts '
+            'WHERE provider = ? AND sub = ? AND email = ?',
+            (args['provider'], userinfo['sub'], userinfo['email'])
+        )
+        account = c.fetchone()
+        if not account:
             account = {
-                'user_id': new_user_id,
+                'user_id': user['id'],
                 'provider': args['provider']
             }
             account.update(userinfo)
@@ -107,18 +114,6 @@ class TokenHandler(RequestHandler):
         else:
             # TODO: Update account with data from OAuth2 provider
             account = dict(zip(account.keys(), account))
-
-        c.execute(
-            'SELECT * FROM users WHERE id = ?', (account['user_id'], ))
-        user = c.fetchone()
-        if user:
-            user = dict(zip(user.keys(), user))
-        else:
-            message = {
-                'message': 'DB error. User not found.',
-            }
-            self.send_error(500, message=message)
-            return
 
         now = datetime.utcnow()
         token = {
