@@ -9,10 +9,8 @@ from tornado.options import parse_command_line, parse_config_file, define, \
     options
 from tornado.web import Application as BaseApplication, authenticated, url
 
-from handlers.base import BaseHandler
-from handlers.tokens import TokenHandler
-from handlers.vms import GuestsHandler
-from settings import BASE_DIR
+from handlers import auth, base, tasks, vms
+from settings import BASE_DIR, UUID_PATTERN
 
 define('port', default=9443)
 define('config_file', default='app.conf')
@@ -24,7 +22,7 @@ define('debug', default=False, group='application')
 define('cookie_secret', default='SOME_SECRET', group='application')
 
 
-class DemoHandler(BaseHandler):
+class DemoHandler(base.BaseHandler):
     @authenticated
     @gen.coroutine
     def get(self):
@@ -51,9 +49,14 @@ def main():
 
     app = Application(
         [
-            url(r'/', DemoHandler),
-            url(r'/token/', TokenHandler),
-            url(r'/guests/', GuestsHandler),
+            url(r'/?', DemoHandler),
+            url(r'/token/?', auth.TokenHandler),
+            url(r'/tasks/?', tasks.TaskHandler),
+            url(r'/tasks/({uuid})/?'.format(uuid=UUID_PATTERN),
+                tasks.TaskHandler),
+            url(r'/guests/?', vms.GuestHandler),
+            url(r'/guests/({uuid})/?'.format(uuid=UUID_PATTERN),
+                vms.GuestHandler),
         ],
         template_path=os.path.join(BASE_DIR, 'templates'),
         static_path=os.path.join(BASE_DIR, 'static'),

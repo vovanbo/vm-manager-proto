@@ -5,13 +5,8 @@ from decorators import authenticated
 from handlers.base import BaseHandler
 
 
-class GuestHandler(BaseHandler):
+class TaskHandler(BaseHandler):
     @authenticated
     @gen.coroutine
     def get(self, id=None):
-        self.write(json_encode(id))
-
-    @authenticated
-    @gen.coroutine
-    def post(self, id=None):
         self.write(json_encode(id))
