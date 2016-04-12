@@ -1,16 +1,19 @@
 import logging
 import os
 import sqlite3
-from datetime import timedelta
+import uuid
+from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta, datetime
 
 from tornado import gen
 from tornado.ioloop import IOLoop
 from tornado.options import parse_command_line, parse_config_file, define, \
     options
+from tornado.queues import Queue
 from tornado.web import Application as BaseApplication, authenticated, url
 
 from handlers import auth, base, tasks, vms
-from settings import BASE_DIR, UUID_PATTERN
+from settings import BASE_DIR, UUID_PATTERN, TaskStatus
 
 define('port', default=9443)
 define('config_file', default='app.conf')
@@ -37,9 +40,31 @@ class Application(BaseApplication):
         cursor = self.db.cursor()
         with open('initial.sql') as f:
             cursor.executescript(f.read())
+        self.queue = Queue()
+        self.executor = ThreadPoolExecutor(max_workers=2)
         super(Application, self).__init__(
             handlers=handlers, default_host=default_host,
             transforms=transforms, **settings)
+
+
+@gen.coroutine
+def start_queue(queue):
+
+    @gen.coroutine
+    def worker():
+        while True:
+            task = yield queue.get()
+            try:
+                logging.info('Task received! %s', task)
+                task.start()
+                result, success = yield task.run()
+                task.finish(success, result)
+                logging.info('Task result: %s', task.result)
+            finally:
+                queue.task_done()
+
+    worker()
+    yield queue.join()
 
 
 def main():
@@ -65,6 +90,8 @@ def main():
     app.listen(options.port)
 
     logging.info('Listening on http://localhost:%d' % options.port)
+
+    IOLoop.current().add_callback(start_queue, app.queue)
     IOLoop.current().start()
 
 if __name__ == '__main__':
