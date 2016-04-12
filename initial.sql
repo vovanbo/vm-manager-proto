@@ -43,11 +43,12 @@ CREATE TABLE IF NOT EXISTS "tasks" (
   "id"       TEXT NOT NULL PRIMARY KEY,
   "user_id"  TEXT NOT NULL,
   "command"  TEXT,
+  "params"   TEXT,
   "result"   TEXT,
   "status"   TEXT NOT NULL,
   "created"  DATETIME NOT NULL,
-  "started"  DATETIME NOT NULL,
-  "finished" DATETIME NOT NULL,
+  "started"  DATETIME,
+  "finished" DATETIME,
   CONSTRAINT "lnk_tasks_users" FOREIGN KEY ("user_id") REFERENCES "users" ("id"),
   CONSTRAINT "unique_id" UNIQUE ("id")
 );
