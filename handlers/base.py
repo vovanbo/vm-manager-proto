@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from tornado.escape import json_decode
 from tornado.web import RequestHandler
 
 
@@ -15,9 +14,10 @@ class BaseHandler(RequestHandler):
             c = self.application.db.cursor()
             c.execute(
                 'SELECT * FROM users WHERE id = ('
-                    'SELECT user_id FROM tokens WHERE id = ? AND expired < ?'
+                    'SELECT user_id FROM tokens WHERE id = ? AND expired > ?'
                 ')',
                 (token, now))
             user = c.fetchone()
-            return dict(zip(user.keys(), user))
-
+            if user:
+                user = dict(zip(user.keys(), user))
+            return user
