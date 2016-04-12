@@ -48,23 +48,25 @@ class Application(BaseApplication):
 
 
 @gen.coroutine
-def start_queue(queue):
+def start_queue(app):
 
     @gen.coroutine
     def worker():
         while True:
-            task = yield queue.get()
+            task = yield app.queue.get()
             try:
                 logging.info('Task received! %s', task)
-                task.start()
-                result, success = yield task.run()
-                task.finish(success, result)
-                logging.info('Task result: %s', task.result)
+                result = yield task.run()
+                if task.status == TaskStatus.DONE:
+                    logging.info('Task DONE. Result: %s', result)
+                else:
+                    logging.info('Task FAILED!')
             finally:
-                queue.task_done()
+                app.queue.task_done()
 
-    worker()
-    yield queue.join()
+    for _ in range(4):
+        worker()
+    yield app.queue.join()
 
 
 def main():
@@ -91,7 +93,7 @@ def main():
 
     logging.info('Listening on http://localhost:%d' % options.port)
 
-    IOLoop.current().add_callback(start_queue, app.queue)
+    IOLoop.current().add_callback(start_queue, app)
     IOLoop.current().start()
 
 if __name__ == '__main__':

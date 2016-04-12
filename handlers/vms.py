@@ -11,8 +11,8 @@ class GuestHandler(BaseHandler):
     @authenticated
     @gen.coroutine
     def get(self, id=None):
-        task = Task(self.get_current_user(), commands.start,
-                    params={'id': id, 'tmp': 123})
+        task = Task(commands.start, self.get_current_user(), self.application,
+                    params={'id': id, 'tmp': self})
         yield self.application.queue.put(task)
         self.write(task.id)
 
