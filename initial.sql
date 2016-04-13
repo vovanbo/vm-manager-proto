@@ -30,8 +30,8 @@ CREATE INDEX IF NOT EXISTS "index_user_id" ON "accounts" ("user_id");
 CREATE TABLE IF NOT EXISTS "tokens" (
   "id"         TEXT     NOT NULL PRIMARY KEY,
   "user_id"    TEXT     NOT NULL,
-  "issued"     DATETIME NOT NULL,
-  "expired"    DATETIME NOT NULL,
+  "issued"     TIMESTAMP NOT NULL,
+  "expired"    TIMESTAMP NOT NULL,
   CONSTRAINT "lnk_tokens_users" FOREIGN KEY ("user_id") REFERENCES "users" ("id"),
   CONSTRAINT "unique_id" UNIQUE ("id")
 );
@@ -45,10 +45,10 @@ CREATE TABLE IF NOT EXISTS "tasks" (
   "command"  TEXT,
   "params"   TEXT,
   "result"   TEXT,
-  "status"   TEXT NOT NULL,
-  "created"  DATETIME NOT NULL,
-  "started"  DATETIME,
-  "finished" DATETIME,
+  "status"   INTEGER NOT NULL,
+  "created"  TIMESTAMP NOT NULL,
+  "started"  TIMESTAMP,
+  "finished" TIMESTAMP,
   CONSTRAINT "lnk_tasks_users" FOREIGN KEY ("user_id") REFERENCES "users" ("id"),
   CONSTRAINT "unique_id" UNIQUE ("id")
 );
