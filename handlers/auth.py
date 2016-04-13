@@ -35,7 +35,7 @@ class TokenHandler(BaseHandler):
         response = yield http_client.fetch(userinfo_url, raise_error=False)
         if response.error:
             errors = json_decode(response.body) if response.body else None
-            self.send_error(401, message='Authentication server error',
+            self.send_error(400, message='Authentication server error',
                             errors=errors)
             return
         else:
@@ -45,7 +45,7 @@ class TokenHandler(BaseHandler):
         userinfo, errors = schema.load(json_decode(response.body))
 
         if errors:
-            self.send_error(401, message='Wrong authentication data received',
+            self.send_error(400, message='Wrong authentication data received',
                             errors=errors)
             return
 
