@@ -1,7 +1,32 @@
+from enum import Enum
+
 from marshmallow import Schema, fields, pre_load, pre_dump
 from marshmallow.validate import OneOf
 
 from settings import USERINFO_ENDPOINTS, TaskStatus
+
+
+class EnumField(fields.String):
+    default_error_messages = {'invalid': 'Not a valid Enum.'}
+
+    def __init__(self, *args, **kwargs):
+        assert 'enum_class' in kwargs, 'enum_class parameter must be passed!'
+        self._class = kwargs.pop('enum_class')
+        self.to_value = kwargs.pop('to_value', True)
+        super(EnumField, self).__init__(*args, **kwargs)
+
+    def _serialize(self, value, attr, obj):
+        if value is None:
+            return None
+        if not isinstance(value, Enum):
+            self.fail('invalid')
+        return value.value if self.to_value else value.name
+
+    def _deserialize(self, value, attr, data):
+        try:
+            return self._class(value) if self.to_value else self._class[value]
+        except ValueError:
+            self.fail('invalid')
 
 
 class GoogleUserinfoSchema(Schema):
@@ -66,7 +91,7 @@ class TaskSchema(Schema):
     command = fields.String(attribute='command_as_string')
     params = fields.String()
     result = fields.String()
-    status = fields.String()
+    status = EnumField(enum_class=TaskStatus, to_value=False)
     created = fields.DateTime(required=True)
     started = fields.DateTime()
     finished = fields.DateTime()
