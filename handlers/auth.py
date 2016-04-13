@@ -113,5 +113,4 @@ class TokenHandler(BaseHandler):
         )
         self.application.db.commit()
 
-        result, errors = TokenOutSchema().dump(token)
-        self.write(result)
+        self.write(TokenOutSchema().dumps(token).data)
