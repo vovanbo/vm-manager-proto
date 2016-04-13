@@ -58,7 +58,7 @@ class FacebookUserinfoSchema(Schema):
         return data
 
 
-class TokenInSchema(Schema):
+class TokenRequestSchema(Schema):
     provider = fields.String(
         required=True,
         validate=[OneOf(choices=USERINFO_ENDPOINTS.keys())]
@@ -71,7 +71,7 @@ class TokenInSchema(Schema):
         return data
 
 
-class TokenOutSchema(Schema):
+class TokenResponseSchema(Schema):
     token = fields.String()
     user_id = fields.UUID()
     issued = fields.DateTime()
@@ -84,7 +84,7 @@ class TokenOutSchema(Schema):
         return data
 
 
-class TaskSchema(Schema):
+class TaskResponseSchema(Schema):
     id = fields.UUID(required=True)
     user_id = fields.UUID(required=True)
     command = fields.String(attribute='command_as_string')

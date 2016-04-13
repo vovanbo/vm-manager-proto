@@ -9,7 +9,7 @@ from tornado.httputil import url_concat
 from tornado.options import options
 
 from handlers.base import BaseHandler
-from schemas import TokenInSchema, TokenOutSchema
+from schemas import TokenRequestSchema, TokenResponseSchema
 from settings import USERINFO_ENDPOINTS
 from utils import module_member, generate_token
 
@@ -20,7 +20,7 @@ class TokenHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
-        data, errors = TokenInSchema().loads(self.request.body.decode('utf-8'))
+        data, errors = TokenRequestSchema().loads(self.request.body.decode('utf-8'))
 
         if errors:
             self.send_error(400, message='Wrong input parameters',
@@ -102,4 +102,4 @@ class TokenHandler(BaseHandler):
         )
         self.application.db.commit()
 
-        self.finish(TokenOutSchema().dumps(token).data)
+        self.finish(TokenResponseSchema().dumps(token).data)
