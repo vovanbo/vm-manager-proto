@@ -2,10 +2,10 @@ import logging
 import uuid
 from datetime import datetime
 
-import purl
 from tornado import gen
 from tornado.escape import json_decode, json_encode
 from tornado.httpclient import AsyncHTTPClient
+from tornado.httputil import url_concat
 from tornado.options import options
 from tornado.web import RequestHandler
 
@@ -38,10 +38,9 @@ class TokenHandler(RequestHandler):
         provider = USERINFO_ENDPOINTS[args['provider']]
         query_params = {'access_token': args['access_token']}
         query_params.update(provider['additional_params'])
-        userinfo_url = purl.URL(provider['url']).query_params(query_params)
+        userinfo_url = url_concat(provider['url'], query_params)
         http_client = AsyncHTTPClient()
-        response = yield http_client.fetch(userinfo_url.as_string(),
-                                           raise_error=False)
+        response = yield http_client.fetch(userinfo_url, raise_error=False)
         if response.error:
             message = {
                 'message': 'Authentication server error'
