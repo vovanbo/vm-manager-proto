@@ -9,17 +9,21 @@ from settings import TaskStatus
 
 class Task(object):
     def __init__(self, command, user, app,
-                 params=None, status=TaskStatus.CREATED, created=None):
+                 id=None, params=None, status=TaskStatus.CREATED, created=None,
+                 result=None, started=None, finished=None):
         assert callable(command), 'Task command must be callable'
         self.command = command
-        self.id = str(uuid.uuid4())
+        self.id = id if id else str(uuid.uuid4())
         self.user = user
         self.params = params
-        self.result = None
-        self.status = status
+        if isinstance(status, TaskStatus):
+            self.status = status
+        elif isinstance(status, str):
+            self.status = TaskStatus(int(status))
         self.created = created or datetime.utcnow()
-        self.started = None
-        self.finished = None
+        self.result = result
+        self.started = started
+        self.finished = finished
         self._app = app
 
     def __repr__(self):
