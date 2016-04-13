@@ -12,7 +12,7 @@ class TaskHandler(BaseHandler):
     @gen.coroutine
     def get(self, task_id=None):
         user = self.get_current_user()
-        c = self.application.db.cursor()
+        c = self.db.cursor()
         if task_id:
             # Get one task
             c.execute(

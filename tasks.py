@@ -58,8 +58,7 @@ class Task(object):
         return '{}.{}'.format(module, cmd)
 
     def _save_to_db(self):
-        c = self.db.cursor()
-        c.execute(
+        self.db.execute(
             'INSERT OR REPLACE INTO '
             'tasks (id, user_id, command, params, result, status, created, started, finished) '
             'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',

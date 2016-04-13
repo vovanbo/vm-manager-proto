@@ -5,6 +5,10 @@ from tornado.web import RequestHandler
 
 
 class BaseHandler(RequestHandler):
+    @property
+    def db(self):
+        return self.application.db
+
     def get_current_user(self):
         token = self.request.headers.get('authorization')
         if not token:
@@ -12,7 +16,7 @@ class BaseHandler(RequestHandler):
         else:
             token = token.split()[1]
             now = datetime.utcnow()
-            c = self.application.db.cursor()
+            c = self.db.cursor()
             c.execute(
                 'SELECT * FROM users WHERE id = ('
                     'SELECT user_id FROM tokens WHERE id = ? AND expired > ?'
