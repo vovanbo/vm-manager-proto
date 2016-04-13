@@ -7,32 +7,24 @@ from tornado.escape import json_decode, json_encode
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httputil import url_concat
 from tornado.options import options
-from tornado.web import RequestHandler
 
+from handlers.base import BaseHandler
 from schemas import TokenInSchema, TokenOutSchema
 from settings import USERINFO_ENDPOINTS
 from utils import module_member, generate_token
 
 
-class TokenHandler(RequestHandler):
+class TokenHandler(BaseHandler):
     def set_default_headers(self):
         self.set_header('Content-Type', 'application/json')
-
-    def write_error(self, status_code, **kwargs):
-        if 'message' in kwargs:
-            self.write(kwargs['message'])
-            self.finish()
 
     @gen.coroutine
     def get(self):
         args, errors = TokenInSchema().load(self.request.arguments)
 
         if errors:
-            message = {
-                'message': 'Wrong input parameters',
-                'errors': errors
-            }
-            self.send_error(400, message=message)
+            self.send_error(400, message='Wrong input parameters',
+                            errors=errors)
             return
 
         provider = USERINFO_ENDPOINTS[args['provider']]
@@ -42,14 +34,9 @@ class TokenHandler(RequestHandler):
         http_client = AsyncHTTPClient()
         response = yield http_client.fetch(userinfo_url, raise_error=False)
         if response.error:
-            message = {
-                'message': 'Authentication server error'
-            }
-            if response.body:
-                message.update({
-                    'response': json_decode(response.body)
-                })
-            self.send_error(401, message=message)
+            errors = json_decode(response.body) if response.body else None
+            self.send_error(401, message='Authentication server error',
+                            errors=errors)
             return
         else:
             logging.info(json_decode(response.body))
@@ -69,11 +56,8 @@ class TokenHandler(RequestHandler):
         # })
 
         if errors:
-            message = {
-                'message': 'Wrong authentication data received',
-                'errors': errors
-            }
-            self.send_error(401, message=message)
+            self.send_error(401, message='Wrong authentication data received',
+                            errors=errors)
             return
 
         c = self.application.db.cursor()

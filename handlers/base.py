@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from tornado.escape import json_encode
 from tornado.web import RequestHandler
 
 
@@ -21,3 +22,11 @@ class BaseHandler(RequestHandler):
             if user:
                 user = dict(zip(user.keys(), user))
             return user
+
+    def write_error(self, status_code, **kwargs):
+        result = {
+            'code': status_code,
+            'message': kwargs.get('message'),
+            'errors': kwargs.get('errors', self._reason),
+        }
+        self.finish(json_encode(result))

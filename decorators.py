@@ -7,6 +7,6 @@ def authenticated(method):
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
         if not self.current_user:
-            self.send_error(401)
+            self.send_error(401, message='Unauthorized')
         return method(self, *args, **kwargs)
     return wrapper
