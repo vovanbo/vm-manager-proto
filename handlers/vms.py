@@ -4,6 +4,7 @@ from tornado.escape import json_encode
 import commands
 from decorators import authenticated
 from handlers.base import BaseHandler
+from schemas import TaskSchema
 from tasks import Task
 
 
@@ -13,8 +14,9 @@ class GuestHandler(BaseHandler):
     def get(self, id=None):
         task = Task(commands.start, self.get_current_user(), self.application,
                     params={'id': id, 'tmp': self})
-        yield self.application.queue.put(task)
-        self.write(task.id)
+        yield task.add_to_queue()
+        result = TaskSchema().dumps(task)
+        self.write(result.data)
 
     @authenticated
     @gen.coroutine

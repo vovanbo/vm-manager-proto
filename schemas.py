@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, pre_load, pre_dump
 from marshmallow.validate import OneOf
 
-from settings import USERINFO_ENDPOINTS
+from settings import USERINFO_ENDPOINTS, TaskStatus
 
 
 class GoogleUserinfoSchema(Schema):
@@ -58,3 +58,15 @@ class TokenOutSchema(Schema):
         if data.get('id'):
             data['token'] = data['id']
         return data
+
+
+class TaskSchema(Schema):
+    id = fields.UUID(required=True)
+    user_id = fields.UUID(required=True)
+    command = fields.String(attribute='command_as_string')
+    params = fields.String()
+    result = fields.String()
+    status = fields.String()
+    created = fields.DateTime(required=True)
+    started = fields.DateTime()
+    finished = fields.DateTime()

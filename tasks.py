@@ -22,12 +22,14 @@ class Task(object):
         self.finished = None
         self._app = app
 
-        self._save_to_db()
-
     def __repr__(self):
         return '<Task(id={self.id!r}, command={self.command_as_string}, ' \
                'created={self.created!r}, user={self.user_id}, ' \
                'status={self.status.name}>.'.format(self=self)
+
+    @property
+    def is_queued(self):
+        return self.status == TaskStatus.QUEUED
 
     @property
     def is_started(self):
@@ -55,6 +57,24 @@ class Task(object):
         cmd = self.command.__name__
         return '{}.{}'.format(module, cmd)
 
+    def _save_to_db(self):
+        c = self.db.cursor()
+        c.execute(
+            'INSERT OR REPLACE INTO '
+            'tasks (id, user_id, command, params, result, status, created, started, finished) '
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (self.id, self.user_id, self.command_as_string,
+             repr(self.params), repr(self.result),
+             self.status.value, self.created, self.started, self.finished)
+        )
+        self.db.commit()
+
+    @gen.coroutine
+    def add_to_queue(self):
+        yield self._app.queue.put(self)
+        self.status = TaskStatus.QUEUED
+        self._save_to_db()
+
     @gen.coroutine
     def run(self):
         self.status = TaskStatus.IN_PROGRESS
@@ -70,15 +90,3 @@ class Task(object):
         self.finished = datetime.utcnow()
         self._save_to_db()
         return self.result
-
-    def _save_to_db(self):
-        c = self.db.cursor()
-        c.execute(
-            'INSERT OR REPLACE INTO '
-            'tasks (id, user_id, command, params, result, status, created, started, finished) '
-            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            (self.id, self.user_id, self.command_as_string,
-             repr(self.params), repr(self.result),
-             self.status.value, self.created, self.started, self.finished)
-        )
-        self.db.commit()
