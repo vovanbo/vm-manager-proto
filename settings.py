@@ -20,7 +20,8 @@ UUID_PATTERN = '[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0
 
 
 class TaskStatus(Enum):
-    QUEUED = 0
-    IN_PROGRESS = 1
-    DONE = 2
-    FAILED = 3
+    CREATED = 0
+    QUEUED = 1
+    IN_PROGRESS = 2
+    DONE = 3
+    FAILED = 4

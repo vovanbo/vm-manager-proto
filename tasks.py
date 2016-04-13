@@ -3,14 +3,13 @@ import uuid
 from datetime import datetime
 
 from tornado import gen
-from tornado.escape import json_encode
 
 from settings import TaskStatus
 
 
 class Task(object):
     def __init__(self, command, user, app,
-                 params=None, status=TaskStatus.QUEUED, created=None):
+                 params=None, status=TaskStatus.CREATED, created=None):
         assert callable(command), 'Task command must be callable'
         self.command = command
         self.id = str(uuid.uuid4())
