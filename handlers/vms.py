@@ -8,7 +8,7 @@ from schemas import TaskResponseSchema
 from tasks import Task
 
 
-class GuestHandler(BaseHandler):
+class DomainHandler(BaseHandler):
     @authenticated
     @gen.coroutine
     def get(self, id=None):
