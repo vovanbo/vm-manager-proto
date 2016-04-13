@@ -20,6 +20,8 @@ define('config_file', default='app.conf')
 define('db', default='db.sqlite')
 define('token_length', type=int, default=60)
 define('token_expire_time', type=timedelta, default=timedelta(minutes=10))
+define('threads', type=int, default=4)
+define('concurrency', type=int, default=4)
 
 define('debug', default=False, group='application')
 define('cookie_secret', default='SOME_SECRET', group='application')
@@ -41,7 +43,7 @@ class Application(BaseApplication):
         with open('initial.sql') as f:
             cursor.executescript(f.read())
         self.queue = Queue()
-        self.executor = ThreadPoolExecutor(max_workers=2)
+        self.executor = ThreadPoolExecutor(max_workers=options.threads)
         super(Application, self).__init__(
             handlers=handlers, default_host=default_host,
             transforms=transforms, **settings)
@@ -64,15 +66,15 @@ def start_queue(app):
             finally:
                 app.queue.task_done()
 
-    for _ in range(4):
+    for _ in range(options.concurrency):
         worker()
     yield app.queue.join()
 
 
 def main():
-    parse_command_line()
     if os.path.exists(options.config_file):
         parse_config_file(options.config_file)
+    parse_command_line()
 
     app = Application(
         [
