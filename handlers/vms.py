@@ -15,8 +15,7 @@ class GuestHandler(BaseHandler):
         task = Task(commands.start, self.get_current_user(), self.application,
                     params={'id': id, 'tmp': self})
         yield task.add_to_queue()
-        result = TaskSchema().dumps(task)
-        self.write(result.data)
+        self.finish(TaskSchema().dumps(task).data)
 
     @authenticated
     @gen.coroutine

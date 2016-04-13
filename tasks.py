@@ -16,10 +16,7 @@ class Task(object):
         self.id = id if id else str(uuid.uuid4())
         self.user = user
         self.params = params
-        if isinstance(status, TaskStatus):
-            self.status = status
-        elif isinstance(status, str):
-            self.status = TaskStatus(int(status))
+        self.status = status
         self.created = created or datetime.utcnow()
         self.result = result
         self.started = started
