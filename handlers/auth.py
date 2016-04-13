@@ -19,16 +19,16 @@ class TokenHandler(BaseHandler):
         self.set_header('Content-Type', 'application/json')
 
     @gen.coroutine
-    def get(self):
-        args, errors = TokenInSchema().load(self.request.arguments)
+    def post(self):
+        data, errors = TokenInSchema().loads(self.request.body.decode('utf-8'))
 
         if errors:
             self.send_error(400, message='Wrong input parameters',
                             errors=errors)
             return
 
-        provider = USERINFO_ENDPOINTS[args['provider']]
-        query_params = {'access_token': args['access_token']}
+        provider = USERINFO_ENDPOINTS[data['provider']]
+        query_params = {'access_token': data['access_token']}
         query_params.update(provider['additional_params'])
         userinfo_url = url_concat(provider['url'], query_params)
         http_client = AsyncHTTPClient()
@@ -43,17 +43,6 @@ class TokenHandler(BaseHandler):
 
         schema = module_member(provider['schema'])()
         userinfo, errors = schema.load(json_decode(response.body))
-        # userinfo, errors = schema.load({
-        #     "email": "vovanbo@yandex.ru",
-        #     "gender": "male",
-        #     "given_name": "Vladimir",
-        #     "picture": "https://scontent.xx.fbcdn.net/hprofile-xat1/v/t1.0-1/p50x50/1471892_10205184079095336_5503015781728347064_n.jpg?oh=ab1f277501162ba3a9e1488fc4bd72a8&oe=5775CE15",
-        #     "email_verified": True,
-        #     "family_name": "Bolshakov",
-        #     "sub": "10207606768621060",
-        #     "profile": "https://www.facebook.com/app_scoped_user_id/10207606768621060/",
-        #     "name": "Vladimir Bolshakov"
-        # })
 
         if errors:
             self.send_error(401, message='Wrong authentication data received',
@@ -78,13 +67,13 @@ class TokenHandler(BaseHandler):
         c.execute(
             'SELECT * FROM accounts '
             'WHERE provider = ? AND sub = ? AND email = ?',
-            (args['provider'], userinfo['sub'], userinfo['email'])
+            (data['provider'], userinfo['sub'], userinfo['email'])
         )
         account = c.fetchone()
         if not account:
             account = {
                 'user_id': user['id'],
-                'provider': args['provider']
+                'provider': data['provider']
             }
             account.update(userinfo)
             c.execute(
@@ -113,4 +102,4 @@ class TokenHandler(BaseHandler):
         )
         self.application.db.commit()
 
-        self.write(TokenOutSchema().dumps(token).data)
+        self.finish(TokenOutSchema().dumps(token).data)

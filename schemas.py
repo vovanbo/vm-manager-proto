@@ -67,7 +67,6 @@ class TokenInSchema(Schema):
 
     @pre_load
     def normalize_arguments(self, data):
-        data = {k: v[0] for k, v in data.items()}
         data['provider'] = data['provider'].lower()
         return data
 
