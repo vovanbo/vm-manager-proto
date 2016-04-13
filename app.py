@@ -16,13 +16,13 @@ from settings import BASE_DIR, UUID_PATTERN, TaskStatus
 
 define('port', default=9443)
 define('config_file', default='app.conf')
-define('db', type=str, default=os.path.join(BASE_DIR, 'db.sqlite'))
+define('db', type=str, default=os.path.join(BASE_DIR, 'db', 'db.sqlite'))
 define('token_length', type=int, default=60)
 define('token_expire_time', type=timedelta, default=timedelta(minutes=10))
 define('threads', type=int, default=4)
 define('concurrency', type=int, default=4)
 define('initial_data_file', type=str,
-       default=os.path.join(BASE_DIR, 'initial.sql'))
+       default=os.path.join(BASE_DIR, 'db', 'initial.sql'))
 
 define('debug', default=False, group='application')
 define('cookie_secret', default='SOME_SECRET', group='application')
