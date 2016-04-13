@@ -26,7 +26,7 @@ class TaskHandler(BaseHandler):
         else:
             # List of user's tasks
             c.execute(
-                'SELECT * FROM tasks WHERE user_id = ?',
+                'SELECT * FROM tasks WHERE user_id = ? ORDER BY created DESC',
                 (user['id'], )
             )
             tasks = [dict(zip(t.keys(), t)) for t in c.fetchall()]
