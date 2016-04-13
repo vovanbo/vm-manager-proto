@@ -64,8 +64,8 @@ class Task(object):
             self.result = yield self.executor.submit(self.command,
                                                      **self.params)
             self.status = TaskStatus.DONE
-        except Exception:
-            self.result = None
+        except Exception as e:
+            self.result = repr(e)
             self.status = TaskStatus.FAILED
         self.finished = datetime.utcnow()
         self._save_to_db()
