@@ -25,9 +25,9 @@ class Task(object):
         self._save_to_db()
 
     def __repr__(self):
-        return 'Task {0.id} created on {0.created} ' \
-               '({1}, user: {0.user_id}, ' \
-               'status: {0.status.name}).'.format(self, self.command_as_string)
+        return '<Task(id={self.id!r}, command={self.command_as_string}, ' \
+               'created={self.created!r}, user={self.user_id}, ' \
+               'status={self.status.name}>.'.format(self=self)
 
     @property
     def is_started(self):
