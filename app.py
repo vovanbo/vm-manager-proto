@@ -1,9 +1,8 @@
 import logging
 import os
 import sqlite3
-import uuid
 from concurrent.futures import ThreadPoolExecutor
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 from tornado import gen
 from tornado.ioloop import IOLoop
@@ -17,11 +16,13 @@ from settings import BASE_DIR, UUID_PATTERN, TaskStatus
 
 define('port', default=9443)
 define('config_file', default='app.conf')
-define('db', default='db.sqlite')
+define('db', type=str, default=os.path.join(BASE_DIR, 'db.sqlite'))
 define('token_length', type=int, default=60)
 define('token_expire_time', type=timedelta, default=timedelta(minutes=10))
 define('threads', type=int, default=4)
 define('concurrency', type=int, default=4)
+define('initial_data_file', type=str,
+       default=os.path.join(BASE_DIR, 'initial.sql'))
 
 define('debug', default=False, group='application')
 define('cookie_secret', default='SOME_SECRET', group='application')
@@ -35,15 +36,18 @@ class DemoHandler(base.BaseHandler):
 
 
 class Application(BaseApplication):
-    def __init__(self, handlers=None, default_host="", transforms=None,
+    def __init__(self, handlers=None, default_host='', transforms=None,
                  **settings):
-        self.db = sqlite3.connect(options.db)
+        assert os.path.exists(options.initial_data_file), \
+            'File with initial SQL data must be exists!'
+        self.db = sqlite3.connect(options.db,
+                                  detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = sqlite3.Row
-        cursor = self.db.cursor()
-        with open('initial.sql') as f:
-            cursor.executescript(f.read())
+        with open(options.initial_data_file) as f:
+            self.db.executescript(f.read())
         self.queue = Queue()
         self.executor = ThreadPoolExecutor(max_workers=options.threads)
+
         super(Application, self).__init__(
             handlers=handlers, default_host=default_host,
             transforms=transforms, **settings)
