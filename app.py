@@ -46,6 +46,7 @@ class Application(BaseApplication):
                  **settings):
         assert os.path.exists(options.initial_data_file), \
             'File with initial SQL data must be exists!'
+        assert options.nodes > 0, 'Count of nodes must be at least 1.'
         self.db = sqlite3.connect(options.db,
                                   detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = sqlite3.Row
