@@ -61,8 +61,7 @@ CREATE TABLE IF NOT EXISTS "domains" (
   "name"    TEXT     NOT NULL,
   "node"    INTEGER  NOT NULL,
   "user_id" TEXT     NOT NULL,
-  "state"   TEXT     NOT NULL,
-  "created" DATETIME NOT NULL,
+  "created" TIMESTAMP NOT NULL,
   CONSTRAINT "lnk_domains_users" FOREIGN KEY ("user_id") REFERENCES "users" ("id"),
   CONSTRAINT "unique_id" UNIQUE ("id")
 );
