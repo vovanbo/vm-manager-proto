@@ -1,0 +1,14 @@
+<volume>
+    <name>{{ name }}</name>
+    <capacity>{{ capacity }}</capacity>
+    <allocation>0</allocation>
+    <target>
+        <path>{{ path }}</path>
+        <format type='qcow2'/>
+        <permissions>
+            <owner>-1</owner>
+            <group>-1</group>
+            <mode>0744</mode>
+        </permissions>
+    </target>
+</volume>

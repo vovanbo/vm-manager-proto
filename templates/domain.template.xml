@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<domain type="test">
+    <name>{{ name }}</name>
+    <uuid>{{ uuid }}</uuid>
+    <os>
+        <type>hvm</type>
+        <loader>/usr/lib/xen/boot/hvmloader</loader>
+        <boot dev="hd"/>
+    </os>
+    <memory>{{ memory }}</memory>
+    <vcpu>{{ vcpu }}</vcpu>
+    <features>
+        <pae/>
+        <acpi/>
+        <apic/>
+    </features>
+    <devices>
+        <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
+        <interface type="bridge">
+            <source bridge="virbr0"/>
+        </interface>
+        <disk type="file" device="disk">
+            <driver name="qemu" type="qcow2"/>
+            <source file="{{ disk_source }}"/>
+            <target dev="sda" bus="scsi"/>
+        </disk>
+    </devices>
+</domain>

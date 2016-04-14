@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<node>
+    <cpu>
+        <mhz>{{ cpu['mhz'] }}</mhz>
+        <model>{{ cpu['model'] }}</model>
+    </cpu>
+    <memory>{{ memory }}</memory>
+    <network>
+        <name>{{ network['name'] }}</name>
+        <uuid>{{ network['uuid'] }}</uuid>
+        <bridge name="virbr0"/>
+        <forward dev="eth0"/>
+        <ip address="{{ network['ip'] }}" netmask="{{ network['netmask'] }}">
+            <dhcp>
+                <range start="{{ dhcp['start'] }}" end="{{ dhcp['end'] }}"/>
+            </dhcp>
+        </ip>
+    </network>
+    <pool type="dir">
+        <name>{{ pool['name'] }}</name>
+        <uuid>{{ pool['uuid'] }}</uuid>
+        <target>
+            <path>/default-pool</path>
+            <permissions>
+                <mode>0700</mode>
+                <owner>-1</owner>
+                <group>-1</group>
+            </permissions>
+        </target>
+    </pool>
+</node>
