@@ -11,6 +11,7 @@ from tornado.options import parse_command_line, parse_config_file, define, \
 from tornado.queues import Queue
 from tornado.web import Application as BaseApplication, authenticated, url
 
+from balancers import SimpleBalancer
 from handlers import auth, base, tasks, vms
 from settings import BASE_DIR, UUID_PATTERN, TaskStatus
 from utils import get_nodes_connections
@@ -60,6 +61,7 @@ class Application(BaseApplication):
                                            settings.get('template_path'))
         if options.create_nodes:
             self.db.execute('DELETE FROM domains')
+        self.balancer = SimpleBalancer(self.nodes)
 
         super(Application, self).__init__(
             handlers=handlers, default_host=default_host,
