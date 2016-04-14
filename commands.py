@@ -1,6 +1,7 @@
 import logging
-
 import time
+import uuid
+
 
 # WARNING: All of commands results must be JSON-serializable values or structs!
 
@@ -40,3 +41,14 @@ def get_nodes_info(**kwargs):
             'threads_per_core': info[7],
         })
     return result[0] if node_id is not None else result
+
+
+def create_domain(**kwargs):
+    app = kwargs.pop('app')
+    node_id, node = app.balancer.get_node_for(kwargs)
+    result = {
+        'id': str(uuid.uuid4()),
+        'node': node_id,
+    }
+    result.update(**kwargs)
+    return result

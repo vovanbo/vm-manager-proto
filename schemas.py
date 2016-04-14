@@ -1,3 +1,4 @@
+import uuid
 from enum import Enum
 
 from marshmallow import Schema, fields, pre_load, pre_dump
@@ -94,3 +95,11 @@ class TaskResponseSchema(Schema):
     created = fields.DateTime(required=True)
     started = fields.DateTime()
     finished = fields.DateTime()
+
+
+class DomainRequestSchema(Schema):
+    id = fields.UUID()
+    name = fields.String(required=True)
+    memory = fields.Integer(required=True)
+    vcpu = fields.Integer(required=True)
+    volume_size = fields.Integer()

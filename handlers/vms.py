@@ -4,7 +4,7 @@ from tornado.escape import json_encode
 import commands
 from decorators import authenticated
 from handlers.base import BaseHandler
-from schemas import TaskResponseSchema
+from schemas import TaskResponseSchema, DomainRequestSchema
 from tasks import Task
 
 
@@ -19,8 +19,19 @@ class DomainHandler(BaseHandler):
 
     @authenticated
     @gen.coroutine
-    def post(self, id=None):
-        self.write(json_encode(id))
+    def post(self):
+        data, errors = DomainRequestSchema(exclude=('id',)).loads(
+            self.request.body.decode('utf-8'))
+
+        if errors:
+            self.send_error(400, message='Wrong input parameters',
+                            errors=errors)
+            return
+
+        task = Task(commands.create_domain, self.get_current_user(),
+                    self.application, params=data)
+        yield task.add_to_queue()
+        self.finish(TaskResponseSchema().dumps(task).data)
 
 
 class NodeHandler(BaseHandler):
