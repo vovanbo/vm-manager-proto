@@ -1,5 +1,10 @@
+import os
 import random
 import sys
+import uuid
+
+import libvirt
+from tornado import template
 
 UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -30,3 +35,49 @@ def generate_token(length=30, chars=UNICODE_ASCII_CHARACTER_SET):
     """
     rand = random.SystemRandom()
     return ''.join(rand.choice(chars) for x in range(length))
+
+
+def get_nodes_connections(count, config_path,
+                          create=False, template_path=None,
+                          open_connections=True):
+    result = {}
+    if create:
+        assert os.path.exists(template_path),\
+            'Template path must be exist for nodes configs creation.'
+        loader = template.Loader(template_path)
+        for n in range(count):
+            xml = loader.load('node.template.xml').generate(
+                cpu={
+                    'mhz': random.randrange(3000, 6000),
+                    'model': 'i686',
+                },
+                memory=8192000,
+                network={
+                    'name': 'private',
+                    'uuid': str(uuid.uuid4()),
+                    'ip': '192.168.0.1',
+                    'netmask': '255.255.255.0'
+                },
+                dhcp={
+                    'start': '192.168.0.128',
+                    'end': '192.168.0.253'
+                },
+                pool={
+                    'name': 'default',
+                    'uuid': str(uuid.uuid4())
+                }
+            ).decode('utf-8')
+            node_config_path = os.path.join(config_path, '{}.xml'.format(n))
+            with open(node_config_path, 'w') as f:
+                f.write(xml)
+            result.update({n: 'test://{}'.format(node_config_path)})
+    else:
+        for n in range(count):
+            node_config_path = os.path.join(config_path, '{}.xml'.format(n))
+            assert os.path.exists(node_config_path), \
+                'Node config {} is not exists.'.format(node_config_path)
+            result.update({n: 'test://{}'.format(node_config_path)})
+
+    if open_connections:
+        result = {k: libvirt.open(v) for k, v in result.items()}
+    return result
