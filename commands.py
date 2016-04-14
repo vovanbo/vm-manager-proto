@@ -10,16 +10,16 @@ def start(**kwargs):
     time.sleep(5)
     logging.info('END commands.start, %s', kwargs)
     return [{
-        'id': kwargs.get('id')
+        'domain_id': kwargs.get('domain_id')
     }, ]
 
 
 def get_nodes_info(**kwargs):
-    app = kwargs.get('app')
-    id = kwargs.get('id')
+    app = kwargs.pop('app')
+    node_id = kwargs.get('node_id')
     nodes = app.nodes
-    if id:
-        id = int(id)
+    if node_id:
+        node_id = int(node_id)
         nodes = {k: v for k, v in nodes.items() if k == id}
     result = []
     for node_id, node in nodes.items():
@@ -39,4 +39,4 @@ def get_nodes_info(**kwargs):
             'cores_per_socket': info[6],
             'threads_per_core': info[7],
         })
-    return result[0] if id is not None else result
+    return result[0] if node_id is not None else result

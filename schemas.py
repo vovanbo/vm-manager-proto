@@ -66,7 +66,7 @@ class TokenRequestSchema(Schema):
     access_token = fields.String(required=True)
 
     @pre_load
-    def normalize_arguments(self, data):
+    def provider_to_lowercase(self, data):
         data['provider'] = data['provider'].lower()
         return data
 

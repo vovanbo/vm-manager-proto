@@ -11,9 +11,9 @@ from tasks import Task
 class DomainHandler(BaseHandler):
     @authenticated
     @gen.coroutine
-    def get(self, id=None):
+    def get(self, domain_id=None):
         task = Task(commands.start, self.get_current_user(), self.application,
-                    params={'id': id, 'tmp': self})
+                    params={'domain_id': domain_id, })
         yield task.add_to_queue()
         self.finish(TaskResponseSchema().dumps(task).data)
 
@@ -26,8 +26,8 @@ class DomainHandler(BaseHandler):
 class NodeHandler(BaseHandler):
     @authenticated
     @gen.coroutine
-    def get(self, id=None):
+    def get(self, node_id=None):
         task = Task(commands.get_nodes_info, self.get_current_user(),
-                    self.application, params={'id': id})
+                    self.application, params={'node_id': node_id})
         yield task.add_to_queue()
         self.finish(TaskResponseSchema().dumps(task).data)

@@ -20,7 +20,8 @@ class TokenHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
-        data, errors = TokenRequestSchema().loads(self.request.body.decode('utf-8'))
+        data, errors = TokenRequestSchema().loads(
+            self.request.body.decode('utf-8'))
 
         if errors:
             self.send_error(400, message='Wrong input parameters',
