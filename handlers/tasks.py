@@ -1,6 +1,6 @@
 from marshmallow.utils import isoformat
 from tornado import gen
-from tornado.escape import json_encode
+from tornado.escape import json_encode, json_decode
 
 from decorators import authenticated
 from handlers.base import BaseHandler
@@ -37,6 +37,7 @@ class TaskHandler(BaseHandler):
             return
 
         for task in tasks:
+            task['result'] = json_decode(task['result'])
             task['status'] = TaskStatus(task['status']).name
             for date_field in ('created', 'started', 'finished'):
                 if task[date_field]:

@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 
 from tornado import gen
+from tornado.escape import json_encode
 
 from settings import TaskStatus
 
@@ -64,7 +65,7 @@ class Task(object):
             'tasks (id, user_id, command, params, result, status, created, started, finished) '
             'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             (self.id, self.user_id, self.command_as_string,
-             repr(self.params), repr(self.result),
+             repr(self.params), json_encode(self.result),
              self.status.value, self.created, self.started, self.finished)
         )
         self.db.commit()
