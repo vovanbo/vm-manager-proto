@@ -99,6 +99,8 @@ def main():
             url(r'/domains/?', vms.DomainHandler),
             url(r'/domains/({uuid})/?'.format(uuid=UUID_PATTERN),
                 vms.DomainHandler),
+            url(r'/nodes/?', vms.NodeHandler),
+            url(r'/nodes/([\d+])', vms.NodeHandler)
         ],
         template_path=os.path.join(BASE_DIR, 'templates'),
         static_path=os.path.join(BASE_DIR, 'static'),

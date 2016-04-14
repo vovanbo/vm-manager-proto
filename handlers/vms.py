@@ -21,3 +21,13 @@ class DomainHandler(BaseHandler):
     @gen.coroutine
     def post(self, id=None):
         self.write(json_encode(id))
+
+
+class NodeHandler(BaseHandler):
+    @authenticated
+    @gen.coroutine
+    def get(self, id=None):
+        task = Task(commands.get_nodes_info, self.get_current_user(),
+                    self.application, params={'id': id})
+        yield task.add_to_queue()
+        self.finish(TaskResponseSchema().dumps(task).data)
