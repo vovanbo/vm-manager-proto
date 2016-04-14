@@ -13,6 +13,7 @@ from tornado.web import Application as BaseApplication, authenticated, url
 
 from handlers import auth, base, tasks, vms
 from settings import BASE_DIR, UUID_PATTERN, TaskStatus
+from utils import get_nodes_connections
 
 define('port', default=9443)
 define('config_file', default='app.conf')
@@ -23,6 +24,11 @@ define('threads', type=int, default=4)
 define('concurrency', type=int, default=4)
 define('initial_data_file', type=str,
        default=os.path.join(BASE_DIR, 'db', 'initial.sql'))
+
+define('nodes', type=int, default=10, group='vm')
+define('nodes_config_path', type=str, group='vm',
+       default=os.path.join(BASE_DIR, 'vm', 'nodes'))
+define('create_nodes', type=bool, default=False, group='vm')
 
 define('debug', default=False, group='application')
 define('cookie_secret', default='SOME_SECRET', group='application')
@@ -47,6 +53,12 @@ class Application(BaseApplication):
             self.db.executescript(f.read())
         self.queue = Queue()
         self.executor = ThreadPoolExecutor(max_workers=options.threads)
+        self.nodes = get_nodes_connections(options.nodes,
+                                           options.nodes_config_path,
+                                           options.create_nodes,
+                                           settings.get('template_path'))
+        if options.create_nodes:
+            self.db.execute('DELETE FROM domains')
 
         super(Application, self).__init__(
             handlers=handlers, default_host=default_host,
