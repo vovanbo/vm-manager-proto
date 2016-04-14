@@ -75,10 +75,7 @@ def start_queue(app):
             try:
                 logging.info('Task received! %s', task)
                 result = yield task.run()
-                if task.status == TaskStatus.DONE:
-                    logging.info('Task DONE. Result: %s', result)
-                else:
-                    logging.info('Task FAILED!')
+                logging.info('Task %s! %s', task.status.name, result)
             finally:
                 app.queue.task_done()
 
