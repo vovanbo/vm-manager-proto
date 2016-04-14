@@ -75,7 +75,7 @@ def get_nodes_connections(count, config_path,
         for n in range(count):
             node_config_path = os.path.join(config_path, '{}.xml'.format(n))
             assert os.path.exists(node_config_path), \
-                'Node config {} is not exists.'.format(node_config_path)
+                'Node config {} is not exist.'.format(node_config_path)
             result.update({n: 'test://{}'.format(node_config_path)})
 
     if open_connections:
