@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 
 from tornado import gen
-from tornado.escape import json_decode, json_encode
+from tornado.escape import json_decode, to_basestring
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httputil import url_concat
 from tornado.options import options
@@ -42,50 +42,45 @@ class TokenHandler(BaseHandler):
             logging.info(json_decode(response.body))
 
         schema = module_member(provider['schema'])()
-        userinfo, errors = schema.load(json_decode(response.body))
+        userinfo, errors = schema.loads(to_basestring(response.body))
 
         if errors:
             self.send_error(400, message='Wrong authentication data received',
                             errors=errors)
             return
 
-        c = self.application.db.cursor()
-        c.execute(
-            'SELECT * FROM users WHERE email = ?', (userinfo['email'], ))
-        user = c.fetchone()
-        if user:
-            user = dict(zip(user.keys(), user))
+        account = self.db.execute(
+            'SELECT * FROM accounts WHERE provider = ? AND sub = ?',
+            (data['provider'], userinfo['sub'], )
+        ).fetchone()
+
+        if account:
+            user = self.db.execute(
+                'SELECT * FROM users WHERE email = ?', (account['email'], )
+            ).fetchone()
+            if not user:
+                self.send_error(500, message='DB error. User not found.')
+                return
         else:
-            new_user_id = str(uuid.uuid4())
             user = {
-                'id': new_user_id,
+                'id': str(uuid.uuid4()),
                 'email': userinfo['email']
             }
-            c.execute('INSERT INTO users (id, email) VALUES (:id, :email)',
-                      user)
+            self.db.execute(
+                'INSERT INTO users (id, email) VALUES (:id, :email)', user)
 
-        c.execute(
-            'SELECT * FROM accounts '
-            'WHERE provider = ? AND sub = ? AND email = ?',
-            (data['provider'], userinfo['sub'], userinfo['email'])
-        )
-        account = c.fetchone()
-        if not account:
             account = {
                 'user_id': user['id'],
                 'provider': data['provider']
             }
             account.update(userinfo)
-            c.execute(
+            self.db.execute(
                 'INSERT INTO '
                 'accounts (user_id, provider, sub, email, email_verified, name, given_name, family_name, profile, picture, gender) '
                 'VALUES (:user_id, :provider, :sub, :email, :email_verified, :name, :given_name, :family_name, :profile, :picture, :gender)',
                 account
             )
-            self.application.db.commit()
-        else:
-            # TODO: Update account with data from OAuth2 provider
-            account = dict(zip(account.keys(), account))
+            self.db.commit()
 
         now = datetime.utcnow()
         token = {
@@ -94,12 +89,11 @@ class TokenHandler(BaseHandler):
             'issued': now,
             'expired': now + options.token_expire_time
         }
-        c.execute(
-            'INSERT INTO '
-            'tokens (id, user_id, issued, expired) '
+        self.db.execute(
+            'INSERT INTO tokens (id, user_id, issued, expired) '
             'VALUES (:id, :user_id, :issued, :expired)',
             token
         )
-        self.application.db.commit()
+        self.db.commit()
 
         self.finish(TokenResponseSchema().dumps(token).data)
