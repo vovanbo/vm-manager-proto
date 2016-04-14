@@ -83,6 +83,7 @@ class Task(object):
         self._save_to_db()
         try:
             self.result = yield self.executor.submit(self.command,
+                                                     app=self._app,
                                                      **self.params)
             self.status = TaskStatus.DONE
         except Exception as e:
