@@ -57,9 +57,11 @@ class Application(BaseApplication):
                                            options.nodes_config_path,
                                            options.create_nodes,
                                            settings.get('template_path'))
-        if options.create_nodes:
-            self.db.execute('DELETE FROM domains')
         self.balancer = SimpleBalancer(self.nodes)
+
+        # FIXME: Remove it for real app usage
+        self.db.execute('DELETE FROM domains')
+        self.db.execute('DELETE FROM tasks')
 
         super(Application, self).__init__(
             handlers=handlers, default_host=default_host,
