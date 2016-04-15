@@ -90,7 +90,7 @@ def create_domain(**kwargs):
     })
 
     volume_xml = loader.load('volume.template.xml')
-    volume_capacity = kwargs.pop('volume_capacity', 10)
+    volume_capacity = kwargs.pop('volume_capacity', 10)  # Default: 10 Gb
     volume_path = '/tmp/volumes/{}/{}.img'.format(node_id, kwargs['uuid'])
     volume = pool.createXML(volume_xml.generate(
         name='volume-for-{}'.format(kwargs['name']),
