@@ -21,7 +21,7 @@ class DomainHandler(BaseHandler):
     @authenticated
     @gen.coroutine
     def post(self):
-        data, errors = DomainRequestSchema(exclude=('uuid',)).loads(
+        data, errors = DomainRequestSchema(exclude=('uuid', 'state')).loads(
             self.request.body.decode('utf-8'))
 
         if errors:

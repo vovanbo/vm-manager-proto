@@ -25,3 +25,15 @@ class TaskStatus(Enum):
     IN_PROGRESS = 2
     DONE = 3
     FAILED = 4
+
+
+class DomainState(Enum):
+    NOSTATE = 0         # no state
+    RUNNING = 1         # the domain is running
+    BLOCKED = 2         # the domain is blocked on resource
+    PAUSED = 3          # the domain is paused by user
+    SHUTDOWN = 4        # the domain is being shut down
+    SHUTOFF = 5         # the domain is shut off
+    CRASHED = 6         # the domain is crashed
+    PMSUSPENDED = 7     # the domain is suspended by guest power management
+    LAST = 8

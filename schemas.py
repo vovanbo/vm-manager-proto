@@ -4,7 +4,7 @@ from enum import Enum
 from marshmallow import Schema, fields, pre_load, pre_dump
 from marshmallow.validate import OneOf
 
-from settings import USERINFO_ENDPOINTS, TaskStatus
+from settings import USERINFO_ENDPOINTS, TaskStatus, DomainState
 
 
 class EnumField(fields.String):
@@ -103,3 +103,8 @@ class DomainRequestSchema(Schema):
     memory = fields.Integer(required=True)
     vcpu = fields.Integer(required=True)
     volume_capacity = fields.Integer()
+    state = fields.Integer(required=True,
+        validate=[
+            OneOf([t.value for t in (DomainState.RUNNING, DomainState.PAUSED)])
+        ]
+    )
