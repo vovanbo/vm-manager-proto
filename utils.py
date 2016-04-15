@@ -89,3 +89,41 @@ def get_nodes_connections(count, config_path,
     if open_connections:
         result = {k: libvirt.open(v) for k, v in result.items()}
     return result
+
+
+def detailed_pool_info(pool):
+    info = pool.info()
+    return {
+        'name': pool.name(),
+        'uuid': pool.UUIDString(),
+        'autostart': pool.autostart(),
+        'is_active': pool.isActive(),
+        'is_persistent': pool.isPersistent(),
+        'num_volumes': pool.numOfVolumes(),
+        'state': info[0],
+        'capacity': info[1],
+        'allocation': info[2],
+        'available': info[3]
+    }
+
+
+def get_free_pool(pools):
+    # TODO: Select pool with maximum available storage
+    return pools[0]
+
+
+def detailed_domain_info(domain):
+    info = domain.info()
+    return {
+        'id': domain.ID(),
+        'uuid': domain.UUID().hex(),
+        'name': domain.name(),
+        'os_type': domain.OSType(),
+        'info': {
+            'state': info[0],
+            'max_memory': info[1],
+            'memory': info[2],
+            'num_virt_cpu': info[3],
+            'cpu_time': info[4],
+        }
+    }

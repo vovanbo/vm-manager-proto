@@ -1,12 +1,11 @@
 import logging
 import time
 import uuid
-
 from datetime import datetime
 
 from tornado import template
 
-from utils import get_db_connect
+from utils import get_db_connect, detailed_pool_info, get_free_pool, detailed_domain_info
 
 
 # WARNING: All the results of commands must be JSON-serializable!
@@ -22,44 +21,6 @@ def start(**kwargs):
     }, ]
 
 
-def get_pool_info(pool):
-    info = pool.info()
-    return {
-        'name': pool.name(),
-        'uuid': pool.UUIDString(),
-        'autostart': pool.autostart(),
-        'is_active': pool.isActive(),
-        'is_persistent': pool.isPersistent(),
-        'num_volumes': pool.numOfVolumes(),
-        'state': info[0],
-        'capacity': info[1],
-        'allocation': info[2],
-        'available': info[3]
-    }
-
-
-def get_free_pool(pools):
-    # TODO: Select pool with maximum available storage
-    return pools[0]
-
-
-def get_domain_info(domain):
-    info = domain.info()
-    return {
-        'id': domain.ID(),
-        'uuid': domain.UUID().hex(),
-        'name': domain.name(),
-        'os_type': domain.OSType(),
-        'info': {
-            'state': info[0],
-            'max_memory': info[1],
-            'memory': info[2],
-            'num_virt_cpu': info[3],
-            'cpu_time': info[4],
-        }
-    }
-
-
 def get_nodes_info(**kwargs):
     app = kwargs.pop('app')
     node_id = kwargs.get('node_id')
@@ -71,6 +32,8 @@ def get_nodes_info(**kwargs):
     logging.info(nodes)
     for id, node in nodes.items():
         info = node.getInfo()
+        pools = [detailed_pool_info(p) for p in node.listAllStoragePools()]
+        domains = [d.UUID().hex() for d in node.listAllDomains()]
         result.append({
             'id': id,
             'hostname': node.getHostname(),
@@ -87,8 +50,8 @@ def get_nodes_info(**kwargs):
                 'cores_per_socket': info[6],
                 'threads_per_core': info[7],
             },
-            'domains': node.listDomainsID(),
-            'pools': [get_pool_info(p) for p in node.listAllStoragePools()],
+            'domains': domains,
+            'pools': pools,
         })
     return result if node_id is None else result[0]
 
@@ -131,4 +94,4 @@ def create_domain(**kwargs):
         (domain.UUID().hex(), domain.name(), node_id, user_id, created)
     )
     db.commit()
-    return get_domain_info(domain)
+    return detailed_domain_info(domain)
