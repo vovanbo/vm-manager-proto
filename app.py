@@ -1,6 +1,5 @@
 import logging
 import os
-import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 
@@ -9,11 +8,11 @@ from tornado.ioloop import IOLoop
 from tornado.options import parse_command_line, parse_config_file, define, \
     options
 from tornado.queues import Queue
-from tornado.web import Application as BaseApplication, authenticated, url
+from tornado.web import Application as BaseApplication, url
 
 from balancers import SimpleBalancer
-from handlers import auth, base, tasks, vms
-from settings import BASE_DIR, UUID_PATTERN, TaskStatus
+from handlers import auth, tasks, vms
+from settings import BASE_DIR, UUID_PATTERN
 from utils import get_nodes_connections, get_db_connect
 
 define('port', default=9443)
@@ -33,13 +32,6 @@ define('create_nodes', type=bool, default=False, group='vm')
 
 define('debug', default=False, group='application')
 define('cookie_secret', default='SOME_SECRET', group='application')
-
-
-class DemoHandler(base.BaseHandler):
-    @authenticated
-    @gen.coroutine
-    def get(self):
-        self.render('app.html')
 
 
 class Application(BaseApplication):
@@ -94,7 +86,6 @@ def main():
 
     app = Application(
         [
-            url(r'/?', DemoHandler),
             url(r'/token/?', auth.TokenHandler),
             url(r'/tasks/?', tasks.TaskHandler),
             url(r'/tasks/({uuid})/?'.format(uuid=UUID_PATTERN),
