@@ -4,7 +4,9 @@ import sys
 import uuid
 
 import libvirt
+import sqlite3
 from tornado import template
+from tornado.options import options
 
 UNICODE_ASCII_CHARACTER_SET = ('abcdefghijklmnopqrstuvwxyz'
                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -22,6 +24,12 @@ def module_member(name):
     mod, member = name.rsplit('.', 1)
     module = import_module(mod)
     return getattr(module, member)
+
+
+def get_db_connect():
+    db = sqlite3.connect(options.db, detect_types=sqlite3.PARSE_DECLTYPES)
+    db.row_factory = sqlite3.Row
+    return db
 
 
 # From oauthlib.common

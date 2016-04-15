@@ -14,7 +14,7 @@ from tornado.web import Application as BaseApplication, authenticated, url
 from balancers import SimpleBalancer
 from handlers import auth, base, tasks, vms
 from settings import BASE_DIR, UUID_PATTERN, TaskStatus
-from utils import get_nodes_connections
+from utils import get_nodes_connections, get_db_connect
 
 define('port', default=9443)
 define('config_file', default='app.conf')
@@ -48,9 +48,7 @@ class Application(BaseApplication):
         assert os.path.exists(options.initial_data_file), \
             'File with initial SQL data must be exists!'
         assert options.nodes > 0, 'Count of nodes must be at least 1.'
-        self.db = sqlite3.connect(options.db,
-                                  detect_types=sqlite3.PARSE_DECLTYPES)
-        self.db.row_factory = sqlite3.Row
+        self.db = get_db_connect()
         with open(options.initial_data_file) as f:
             self.db.executescript(f.read())
         self.queue = Queue()
