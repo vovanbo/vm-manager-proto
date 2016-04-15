@@ -5,6 +5,7 @@ from datetime import datetime
 
 from tornado import template
 
+from settings import DomainState
 from utils import get_db_connect, detailed_pool_info, get_free_pool, detailed_domain_info
 
 
@@ -114,3 +115,32 @@ def create_domain(**kwargs):
     )
     db.commit()
     return detailed_domain_info(domain)
+
+
+def change_domain_state(**kwargs):
+    logging.info(kwargs)
+    app = kwargs.pop('app')
+    user_id = kwargs.pop('user_id')
+    state = DomainState(kwargs['state'])
+    domain_id = kwargs.get('domain_id')
+    nodes = app.nodes
+    db = get_db_connect()
+    domain_id = str(uuid.UUID(domain_id))
+    d = db.execute(
+        'SELECT * FROM domains WHERE uuid = ? AND user_id = ?',
+        (domain_id, user_id,)
+    ).fetchone()
+    assert d, 'Domain is not found in DB.'
+    domain = nodes[d['node']].lookupByUUIDString(d['uuid'])
+    assert domain, 'Domain is not found on their node.'
+
+    current_state = DomainState(domain.info()[0])
+    # TODO: Many variations of changing state
+    if state != current_state:
+        if state == DomainState.RUNNING:
+            domain.resume()
+        elif state == DomainState.PAUSED:
+            domain.suspend()
+        else:
+            return False  # Something wrong...
+    return True

@@ -36,6 +36,29 @@ class DomainHandler(BaseHandler):
         yield task.add_to_queue()
         self.finish(TaskResponseSchema().dumps(task).data)
 
+    @authenticated
+    @gen.coroutine
+    def patch(self, domain_id=None):
+        if domain_id is None:
+            self.send_error(400, message='Domain ID must be passed in URI.')
+            return
+
+        data, errors = DomainRequestSchema(only=('state',)).loads(
+            self.request.body.decode('utf-8'))
+
+        if errors:
+            self.send_error(400, message='Wrong input parameters',
+                            errors=errors)
+            return
+
+        user = self.get_current_user()
+        data.update({'domain_id': domain_id, 'user_id': user['id']})
+        # TODO: Support changing any parameters, not only 'state'
+        task = Task(commands.change_domain_state, user, self.application,
+                    params=data)
+        yield task.add_to_queue()
+        self.finish(TaskResponseSchema().dumps(task).data)
+
 
 class NodeHandler(BaseHandler):
     @authenticated
