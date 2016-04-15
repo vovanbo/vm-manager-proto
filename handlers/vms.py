@@ -12,8 +12,9 @@ class DomainHandler(BaseHandler):
     @authenticated
     @gen.coroutine
     def get(self, domain_id=None):
-        task = Task(commands.start, self.get_current_user(), self.application,
-                    params={'domain_id': domain_id, })
+        user = self.get_current_user()
+        task = Task(commands.get_domains_info, user, self.application,
+                    params={'domain_id': domain_id, 'user_id': user['id']})
         yield task.add_to_queue()
         self.finish(TaskResponseSchema().dumps(task).data)
 

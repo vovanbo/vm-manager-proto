@@ -53,6 +53,28 @@ def get_nodes_info(**kwargs):
     return result if node_id is None else result[0]
 
 
+def get_domains_info(**kwargs):
+    app = kwargs.pop('app')
+    user_id = kwargs.pop('user_id')
+    domain_id = kwargs.get('domain_id')
+    nodes = app.nodes
+    db = get_db_connect()
+    if domain_id:
+        domain_id = str(uuid.UUID(domain_id))
+        domains = db.execute(
+            'SELECT * FROM domains WHERE uuid = ? AND user_id = ?',
+            (domain_id, user_id, )
+        ).fetchall()
+    else:
+        domains = db.execute(
+            'SELECT * FROM domains WHERE user_id = ?',
+            (user_id, )
+        ).fetchall()
+    result = [nodes[d['node']].lookupByUUIDString(d['uuid']) for d in domains]
+    result = [detailed_domain_info(d) for d in result]
+    return result if domain_id is None else result[0]
+
+
 def create_domain(**kwargs):
     app = kwargs.pop('app')
     user_id = kwargs.pop('user_id')
