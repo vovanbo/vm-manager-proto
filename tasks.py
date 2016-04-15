@@ -87,6 +87,7 @@ class Task(object):
                                                      **self.params)
             self.status = TaskStatus.DONE
         except Exception as e:
+            # TODO: Collect detailed trace back
             self.result = repr(e)
             self.status = TaskStatus.FAILED
         self.finished = datetime.utcnow()
