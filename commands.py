@@ -11,14 +11,11 @@ from utils import get_db_connect, detailed_pool_info, get_free_pool, detailed_do
 # WARNING: All the results of commands must be JSON-serializable!
 
 
-
-def start(**kwargs):
+def debug(**kwargs):
     logging.info('BEGIN commands.start')
     time.sleep(5)
     logging.info('END commands.start, %s', kwargs)
-    return [{
-        'domain_id': kwargs.get('domain_id')
-    }, ]
+    return True
 
 
 def get_nodes_info(**kwargs):
