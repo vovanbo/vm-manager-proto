@@ -2,8 +2,15 @@ import logging
 import time
 import uuid
 
+from datetime import datetime
+
+from tornado import template
+
+from utils import get_db_connect
+
 
 # WARNING: All the results of commands must be JSON-serializable!
+
 
 
 def start(**kwargs):
@@ -28,6 +35,28 @@ def get_pool_info(pool):
         'capacity': info[1],
         'allocation': info[2],
         'available': info[3]
+    }
+
+
+def get_free_pool(pools):
+    # TODO: Select pool with maximum available storage
+    return pools[0]
+
+
+def get_domain_info(domain):
+    info = domain.info()
+    return {
+        'id': domain.ID(),
+        'uuid': domain.UUID().hex(),
+        'name': domain.name(),
+        'os_type': domain.OSType(),
+        'info': {
+            'state': info[0],
+            'max_memory': info[1],
+            'memory': info[2],
+            'num_virt_cpu': info[3],
+            'cpu_time': info[4],
+        }
     }
 
 
@@ -66,10 +95,40 @@ def get_nodes_info(**kwargs):
 
 def create_domain(**kwargs):
     app = kwargs.pop('app')
+    user_id = kwargs.pop('user_id')
+    loader = template.Loader(app.settings.get('template_path'))
+
     node_id, node = app.balancer.get_node_for(kwargs)
-    result = {
-        'id': str(uuid.uuid4()),
+    pool = get_free_pool(node.listAllStoragePools())
+    assert pool, 'Pool is required for domain creation on node %s.' % node_id
+
+    kwargs.update({
+        'uuid': uuid.uuid4(),
         'node': node_id,
-    }
-    result.update(**kwargs)
-    return result
+    })
+
+    volume_xml = loader.load('volume.template.xml')
+    volume_capacity = kwargs.pop('volume_capacity', 10)
+    volume_path = '/tmp/volumes/{}/{}.img'.format(node_id, kwargs['uuid'])
+    volume = pool.createXML(volume_xml.generate(
+        name='volume-for-{}'.format(kwargs['name']),
+        capacity=volume_capacity, path=volume_path
+    ).decode('utf-8'))
+    assert volume, 'Volume creation is failed!'
+
+    logging.info(kwargs)
+    domain_xml = loader.load('domain.template.xml')
+    domain = node.createXML(domain_xml.generate(
+        disk_source=volume_path, **kwargs
+    ).decode('utf-8'))
+    assert domain, 'Domain creation is failed!'
+
+    created = datetime.utcnow()
+    db = get_db_connect()
+    db.execute(
+        'INSERT INTO domains (id, name, node, user_id, created) '
+        'VALUES (?, ?, ?, ?, ?)',
+        (domain.UUID().hex(), domain.name(), node_id, user_id, created)
+    )
+    db.commit()
+    return get_domain_info(domain)
