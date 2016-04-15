@@ -57,19 +57,17 @@ CREATE INDEX IF NOT EXISTS "index_status" ON "tasks" ("status");
 CREATE INDEX IF NOT EXISTS "index_user_id2" ON "tasks" ("user_id");
 
 CREATE TABLE IF NOT EXISTS "domains" (
-  "id"      TEXT     NOT NULL PRIMARY KEY,
-  "name"    TEXT     NOT NULL,
-  "node"    INTEGER  NOT NULL,
-  "user_id" TEXT     NOT NULL,
+  "uuid"    TEXT    NOT NULL PRIMARY KEY,
+  "name"    TEXT    NOT NULL,
+  "node"    INTEGER NOT NULL,
+  "user_id" TEXT    NOT NULL,
   "created" TIMESTAMP NOT NULL,
   CONSTRAINT "lnk_domains_users" FOREIGN KEY ("user_id") REFERENCES "users" ("id"),
-  CONSTRAINT "unique_id" UNIQUE ("id")
+  CONSTRAINT "unique_id" UNIQUE ("uuid")
 );
 -- Create index index_created
 CREATE INDEX IF NOT EXISTS "index_created" ON "domains" ("created");
-
 -- Create index index_node
 CREATE INDEX IF NOT EXISTS "index_node" ON "domains" ("node");
-
 -- Create index index_user_id3
 CREATE INDEX IF NOT EXISTS "index_user_id3" ON "domains" ("user_id");

@@ -116,7 +116,7 @@ def detailed_domain_info(domain):
     info = domain.info()
     return {
         'id': domain.ID(),
-        'uuid': domain.UUID().hex(),
+        'uuid': domain.UUIDString(),
         'name': domain.name(),
         'os_type': domain.OSType(),
         'info': {

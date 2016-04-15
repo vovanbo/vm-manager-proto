@@ -89,9 +89,9 @@ def create_domain(**kwargs):
     created = datetime.utcnow()
     db = get_db_connect()
     db.execute(
-        'INSERT INTO domains (id, name, node, user_id, created) '
+        'INSERT INTO domains (uuid, name, node, user_id, created) '
         'VALUES (?, ?, ?, ?, ?)',
-        (domain.UUID().hex(), domain.name(), node_id, user_id, created)
+        (domain.UUIDString(), domain.name(), node_id, user_id, created)
     )
     db.commit()
     return detailed_domain_info(domain)
