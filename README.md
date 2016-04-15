@@ -2,10 +2,11 @@
 
 ## Asyncronous API prototype for managing virtual machines via libvirt
 
-**WARNING**: It uses SQLite as main DB (in purposes of fast delevepment)! SQLite has a one-threaded blocking engine. So use it carefully.
+**WARNING**: It uses SQLite as main DB (in purposes of fast development)! SQLite has a one-threaded blocking engine. So use it carefully.
 
 ### Requirements:
 
+- Python 3.5
 - libvirt-python==1.3.3
 - marshmallow==2.7.1
 - tornado==4.3
