@@ -138,6 +138,38 @@ def change_domain_state(**kwargs):
             domain.resume()
         elif state == DomainState.PAUSED:
             domain.suspend()
+        elif state == DomainState.SHUTDOWN:
+            domain.shutdown()
         else:
             return False  # Something wrong...
+    return True
+
+
+def delete_domain(**kwargs):
+    app = kwargs.pop('app')
+    user_id = kwargs.pop('user_id')
+    domain_id = kwargs.get('domain_id')
+    nodes = app.nodes
+    db = get_db_connect()
+    domain_id = str(uuid.UUID(domain_id))
+
+    d = db.execute(
+        'SELECT * FROM domains WHERE uuid = ? AND user_id = ?',
+        (domain_id, user_id,)
+    ).fetchone()
+    assert d, 'Domain is not found in DB.'
+    node = nodes[d['node']]
+    domain = node.lookupByUUIDString(d['uuid'])
+    assert domain, 'Domain is not found on their node.'
+
+    domain.suspend()  # Or shutdown?
+
+    volume_name = 'volume-for-{}'.format(domain.UUIDString())
+    for pool in node.listAllStoragePools():
+        volume = pool.storageVolLookupByName(volume_name)
+        if volume:
+            # volume.wipe()
+            volume.delete()
+
+    domain.destroy()
     return True

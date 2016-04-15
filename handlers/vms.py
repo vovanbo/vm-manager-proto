@@ -59,6 +59,19 @@ class DomainHandler(BaseHandler):
         yield task.add_to_queue()
         self.finish(TaskResponseSchema().dumps(task).data)
 
+    @authenticated
+    @gen.coroutine
+    def delete(self, domain_id=None):
+        if domain_id is None:
+            self.send_error(400, message='Domain ID must be passed in URI.')
+            return
+
+        user = self.get_current_user()
+        task = Task(commands.delete_domain, user, self.application,
+                    params={'domain_id': domain_id, 'user_id': user['id']})
+        yield task.add_to_queue()
+        self.finish(TaskResponseSchema().dumps(task).data)
+
 
 class NodeHandler(BaseHandler):
     @authenticated
