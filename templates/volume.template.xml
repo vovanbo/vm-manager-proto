@@ -1,6 +1,6 @@
 <volume>
     <name>{{ name }}</name>
-    <capacity>{{ capacity }}</capacity>
+    <capacity unit="G">{{ capacity }}</capacity>
     <allocation>0</allocation>
     <target>
         <path>{{ path }}</path>

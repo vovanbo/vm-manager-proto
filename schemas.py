@@ -98,8 +98,8 @@ class TaskResponseSchema(Schema):
 
 
 class DomainRequestSchema(Schema):
-    id = fields.UUID()
+    uuid = fields.UUID()
     name = fields.String(required=True)
     memory = fields.Integer(required=True)
     vcpu = fields.Integer(required=True)
-    volume_size = fields.Integer()
+    volume_capacity = fields.Integer()

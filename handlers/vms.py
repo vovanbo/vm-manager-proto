@@ -20,7 +20,7 @@ class DomainHandler(BaseHandler):
     @authenticated
     @gen.coroutine
     def post(self):
-        data, errors = DomainRequestSchema(exclude=('id',)).loads(
+        data, errors = DomainRequestSchema(exclude=('uuid',)).loads(
             self.request.body.decode('utf-8'))
 
         if errors:
@@ -28,8 +28,10 @@ class DomainHandler(BaseHandler):
                             errors=errors)
             return
 
-        task = Task(commands.create_domain, self.get_current_user(),
-                    self.application, params=data)
+        user = self.get_current_user()
+        data.update({'user_id': user['id']})
+        task = Task(commands.create_domain, user, self.application,
+                    params=data)
         yield task.add_to_queue()
         self.finish(TaskResponseSchema().dumps(task).data)
 
