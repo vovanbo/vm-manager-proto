@@ -93,7 +93,7 @@ def create_domain(**kwargs):
     volume_capacity = kwargs.pop('volume_capacity', 10)  # Default: 10 Gb
     volume_path = '/tmp/volumes/{}/{}.img'.format(node_id, kwargs['uuid'])
     volume = pool.createXML(volume_xml.generate(
-        name='volume-for-{}'.format(kwargs['name']),
+        name='volume-for-{}'.format(kwargs['uuid']),
         capacity=volume_capacity, path=volume_path
     ).decode('utf-8'))
     assert volume, 'Volume creation is failed!'
