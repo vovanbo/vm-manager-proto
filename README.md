@@ -22,3 +22,11 @@ $ pyenv local vm-manager-proto
 $ pip install -r requirements.txt
 $ PYTHONPATH=. python app.py
 ```
+
+In the first time application must be run with `create_nodes` option:
+
+```shell
+$ PYTHONPATH=. python app.py --create_nodes=yes
+```
+
+It is create example nodes configurations for you in `./vm/nodes/` folder.
